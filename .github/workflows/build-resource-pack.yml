@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       pack_name:
-        description: '資源包名稱 (例如: FemaleGenderMod-TC)'
+        description: '資源包名稱 (例如: VulkanMod-TC)'
         required: true
-        default: 'FemaleGenderMod-TC'
+        default: 'VulkanMod-TC'
       version_name:
         description: '版本號 (例如: v1.0.0)'
         required: true
