@@ -1,0 +1,46 @@
+name: 打包 Minecraft 資源包
+
+# 允許手動觸發，並設定三個輸入欄位
+on:
+  workflow_dispatch:
+    inputs:
+      pack_name:
+        description: '資源包名稱 (例如: FemaleGenderMod-TC)'
+        required: true
+        default: 'FemaleGenderMod-TC'
+      version_name:
+        description: '版本號 (例如: v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      retention_days:
+        description: '檔案保存天數 (1~90天，GitHub 限制最多 90 天)'
+        required: true
+        default: '90'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 檢出程式碼 (Checkout)
+        uses: actions/checkout@v4
+
+      - name: 📦 打包資源包 (Zip files)
+        run: |
+          # 讀取你輸入的名稱與版本，組合出最終的壓縮檔名
+          ZIP_NAME="${{ github.event.inputs.pack_name }}_${{ github.event.inputs.version_name }}.zip"
+          
+          # 將當前目錄下的所有檔案壓縮，並排除不需要的檔案
+          zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "*.DS_Store" -x "README.md"
+          
+          # 將檔名記錄到環境變數，方便下一步驟讀取
+          echo "ZIP_FILE=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: 📤 上傳打包結果 (Upload Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          # 設定 GitHub Actions 介面上顯示的 Artifact 名稱
+          name: ${{ github.event.inputs.pack_name }}-${{ github.event.inputs.version_name }}
+          path: ${{ env.ZIP_FILE }}
+          # 讀取你輸入的天數來設定保存期限
+          retention-days: ${{ github.event.inputs.retention_days }}
